@@ -2,218 +2,146 @@ package com.mthree.ui;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class UserIOConsoleImpl implements UserIO {
+    private final Scanner console = new Scanner(System.in);
 
-    final private Scanner console = new Scanner(System.in);
-
-    /**
-     *
-     * A very simple method that takes in a message to display on the console
-     * and then waits for a integer answer from the user to return.
-     *
-     * @param msg - String of information to display to the user.
-     *
-     */
     @Override
     public void print(String msg) {
         System.out.println(msg);
     }
 
-    /**
-     *
-     * A simple method that takes in a message to display on the console,
-     * and then waits for an answer from the user to return.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @return the answer to the message as string
-     */
     @Override
     public String readString(String msgPrompt) {
         System.out.println(msgPrompt);
         return console.nextLine();
     }
 
-    public BigDecimal readArea(String msgPrompt) {
+    @Override
+    public String readCustomerName(String msgPrompt) {
         boolean flag = false;
         do {
             System.out.println(msgPrompt);
-            String userinput = console.nextLine();
-            try {
-                int temp = Integer.parseInt(userinput);
-                if (temp > 100) {
-                    flag = true;
-                    return new BigDecimal(userinput);
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input, please enter a numeric value.");
+            String userInput = console.nextLine();
+            if (userInput.matches("^[a-zA-Z0-9., ]+$") && !userInput.trim().isEmpty()) {
+                flag = true;
+                return userInput;
+            } else {
+                System.out.println("Name may not be blank and is limited to characters [a-z][0-9] as well as periods and comma characters.");
             }
-        }while (!flag);
+        } while (!flag);
         return null;
     }
 
-    /**
-     *
-     * A simple method that takes in a message to display on the console,
-     * and continually reprompts the user with that message until they enter an integer
-     * to be returned as the answer to that message.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @return the answer to the message as integer
-     */
     @Override
-    public int readInt(String msgPrompt) {
-        boolean invalidInput = true;
-        int num = 0;
-        while (invalidInput) {
+    public LocalDate readDate(String prompt) {
+        boolean valid = false;
+        while (!valid) {
+            System.out.println(prompt);
+            String userInput = console.nextLine();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             try {
-                // print the message msgPrompt (ex: asking for the # of cats!)
-                String stringValue = this.readString(msgPrompt);
-                // Get the input line, and try and parse
-                num = Integer.parseInt(stringValue); // if it's 'bob' it'll break
-                invalidInput = false; // or you can use 'break;'
-            } catch (NumberFormatException e) {
-                // If it explodes, it'll go here and do this.
-                this.print("Input error. Please try again.");
+                LocalDate ld = LocalDate.parse(userInput, formatter);
+                valid = true;
+                return ld;
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format (MM/dd/yyyy) or value, please try again.");
             }
         }
-        return num;
+        return null;
     }
 
-    /**
-     *
-     * A slightly more complex method that takes in a message to display on the console,
-     * and continually reprompts the user with that message until they enter an integer
-     * within the specified min/max range to be returned as the answer to that message.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @param min - minimum acceptable value for return
-     * @param max - maximum acceptable value for return
-     * @return an integer value as an answer to the message prompt within the min/max range
-     */
+    @Override
+    public BigDecimal readArea(String msgPrompt) {
+        while (true) {
+            String input = readString(msgPrompt);
+            try {
+                BigDecimal area = new BigDecimal(input);
+                if (area.compareTo(BigDecimal.ZERO) > 0 && area.compareTo(new BigDecimal("100")) >= 0) {
+                    return area;
+                } else {
+                    print("Area must be a positive decimal at least 100 sq ft.");
+                }
+            } catch (NumberFormatException e) {
+                print("Invalid decimal value.");
+            }
+        }
+    }
+
+    @Override
+    public int readInt(String msgPrompt) {
+        while (true) {
+            try {
+                return Integer.parseInt(readString(msgPrompt));
+            } catch (NumberFormatException e) {
+                print("Input error. Please try again.");
+            }
+        }
+    }
+
     @Override
     public int readInt(String msgPrompt, int min, int max) {
         int result;
         do {
             result = readInt(msgPrompt);
         } while (result < min || result > max);
-
         return result;
     }
 
-    /**
-     *
-     * A simple method that takes in a message to display on the console,
-     * and continually reprompts the user with that message until they enter a long
-     * to be returned as the answer to that message.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @return the answer to the message as long
-     */
     @Override
     public long readLong(String msgPrompt) {
         while (true) {
             try {
-                return Long.parseLong(this.readString(msgPrompt));
+                return Long.parseLong(readString(msgPrompt));
             } catch (NumberFormatException e) {
-                this.print("Input error. Please try again.");
+                print("Input error. Please try again.");
             }
         }
     }
 
-    /**
-     * A slightly more complex method that takes in a message to display on the console,
-     * and continually reprompts the user with that message until they enter a double
-     * within the specified min/max range to be returned as the answer to that message.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @param min - minimum acceptable value for return
-     * @param max - maximum acceptable value for return
-     * @return an long value as an answer to the message prompt within the min/max range
-     */
     @Override
     public long readLong(String msgPrompt, long min, long max) {
         long result;
         do {
             result = readLong(msgPrompt);
         } while (result < min || result > max);
-
         return result;
     }
 
-    /**
-     *
-     * A simple method that takes in a message to display on the console,
-     * and continually reprompts the user with that message until they enter a float
-     * to be returned as the answer to that message.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @return the answer to the message as float
-     */
     @Override
     public float readFloat(String msgPrompt) {
         while (true) {
             try {
-                return Float.parseFloat(this.readString(msgPrompt));
+                return Float.parseFloat(readString(msgPrompt));
             } catch (NumberFormatException e) {
-                this.print("Input error. Please try again.");
+                print("Input error. Please try again.");
             }
         }
     }
 
-    /**
-     *
-     * A slightly more complex method that takes in a message to display on the console,
-     * and continually reprompts the user with that message until they enter a float
-     * within the specified min/max range to be returned as the answer to that message.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @param min - minimum acceptable value for return
-     * @param max - maximum acceptable value for return
-     * @return an float value as an answer to the message prompt within the min/max range
-     */
     @Override
     public float readFloat(String msgPrompt, float min, float max) {
         float result;
         do {
             result = readFloat(msgPrompt);
         } while (result < min || result > max);
-
         return result;
     }
 
-    /**
-     *
-     * A simple method that takes in a message to display on the console,
-     * and continually reprompts the user with that message until they enter a double
-     * to be returned as the answer to that message.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @return the answer to the message as double
-     */
     @Override
     public double readDouble(String msgPrompt) {
         while (true) {
             try {
-                return Double.parseDouble(this.readString(msgPrompt));
+                return Double.parseDouble(readString(msgPrompt));
             } catch (NumberFormatException e) {
-                this.print("Input error. Please try again.");
+                print("Input error. Please try again.");
             }
         }
     }
 
-    /**
-     *
-     * A slightly more complex method that takes in a message to display on the console,
-     * and continually reprompts the user with that message until they enter a double
-     * within the specified min/max range to be returned as the answer to that message.
-     *
-     * @param msgPrompt - String explaining what information you want from the user.
-     * @param min - minimum acceptable value for return
-     * @param max - maximum acceptable value for return
-     * @return an double value as an answer to the message prompt within the min/max range
-     */
     @Override
     public double readDouble(String msgPrompt, double min, double max) {
         double result;
@@ -222,5 +150,4 @@ public class UserIOConsoleImpl implements UserIO {
         } while (result < min || result > max);
         return result;
     }
-
 }

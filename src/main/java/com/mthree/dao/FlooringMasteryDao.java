@@ -9,27 +9,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface FlooringMasteryDao {
-
-    List<Product> getAllProduct()
-            throws FlooringMasteryPersistenceException;
-
-    List<Tax> getAllTax()
-            throws FlooringMasteryPersistenceException;
-
-
-    List<Order> getAllOrder()
-            throws FlooringMasteryPersistenceException;
-
-    Order addorder(Product product, Tax tax, String customerName, int orderNumber, BigDecimal area)
-            throws FlooringMasteryPersistenceException;
-
-    Order getOrder(LocalDate date)
-            throws FlooringMasteryPersistenceException;
-
-    Order removeOrder(int orderNumber, LocalDate date)
-            throws FlooringMasteryPersistenceException;
-
-    Order editOrder(int orderNumber, LocalDate date)
-            throws FlooringMasteryPersistenceException;
-
-}
+        List<Product> getAllProducts() throws FlooringMasteryPersistenceException;
+        List<Tax> getAllTaxes() throws FlooringMasteryPersistenceException;
+        Order addOrder(Order order) throws FlooringMasteryPersistenceException;
+        List<Order> getOrdersByDate(LocalDate date) throws FlooringMasteryPersistenceException;
+        Order getOrder(int orderNumber, LocalDate date) throws FlooringMasteryPersistenceException;
+        Order editOrder(Order order) throws FlooringMasteryPersistenceException;
+        Order removeOrder(int orderNumber, LocalDate date) throws FlooringMasteryPersistenceException;
+        int getNextOrderNumber() throws FlooringMasteryPersistenceException;
+    }
