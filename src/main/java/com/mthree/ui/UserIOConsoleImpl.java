@@ -1,5 +1,7 @@
 package com.mthree.ui;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class UserIOConsoleImpl implements UserIO {
@@ -31,6 +33,24 @@ public class UserIOConsoleImpl implements UserIO {
     public String readString(String msgPrompt) {
         System.out.println(msgPrompt);
         return console.nextLine();
+    }
+
+    public BigDecimal readArea(String msgPrompt) {
+        boolean flag = false;
+        do {
+            System.out.println(msgPrompt);
+            String userinput = console.nextLine();
+            try {
+                int temp = Integer.parseInt(userinput);
+                if (temp > 100) {
+                    flag = true;
+                    return new BigDecimal(userinput);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input, please enter a numeric value.");
+            }
+        }while (!flag);
+        return null;
     }
 
     /**
