@@ -42,13 +42,13 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
     }
 
     private void loadProducts() throws FlooringMasteryPersistenceException {
-        try (Scanner scanner = new Scanner(new BufferedReader(new FileReader(PRODUCTS_FILE)))) {
-            if (scanner.hasNextLine()) scanner.nextLine(); // Skip header
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] tokens = line.split(",");
-                if (tokens.length == 3) {
-                    Product p = new Product(tokens[0], new BigDecimal(tokens[1]), new BigDecimal(tokens[2]));
+        try (Scanner fileScanner = new Scanner(new BufferedReader(new FileReader(PRODUCTS_FILE)))) {
+            if (fileScanner.hasNextLine()) fileScanner.nextLine(); // Skip header
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] productDetails = line.split(",");
+                if (productDetails.length == 3) {
+                    Product p = new Product(productDetails[0], new BigDecimal(productDetails[1]), new BigDecimal(productDetails[2]));
                     products.put(p.getProductType().toUpperCase(), p);
                 }
             }
@@ -58,13 +58,13 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
     }
 
     private void loadTaxes() throws FlooringMasteryPersistenceException {
-        try (Scanner scanner = new Scanner(new BufferedReader(new FileReader(TAXES_FILE)))) {
-            if (scanner.hasNextLine()) scanner.nextLine(); // Skip header
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] tokens = line.split(",");
-                if (tokens.length == 3) {
-                    Tax t = new Tax(tokens[0], tokens[1], new BigDecimal(tokens[2]));
+        try (Scanner fileScanner = new Scanner(new BufferedReader(new FileReader(TAXES_FILE)))) {
+            if (fileScanner.hasNextLine()) fileScanner.nextLine(); // Skip header
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] taxDetails = line.split(",");
+                if (taxDetails.length == 3) {
+                    Tax t = new Tax(taxDetails[0], taxDetails[1], new BigDecimal(taxDetails[2]));
                     taxes.put(t.getState().toUpperCase(), t);
                 }
             }
@@ -120,24 +120,24 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         List<Order> orders = new ArrayList<>();
         File file = new File(filePath);
         if (!file.exists()) return orders;
-        try (Scanner scanner = new Scanner(new BufferedReader(new FileReader(file)))) {
-            if (scanner.hasNextLine()) scanner.nextLine(); // Skip header
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] tokens = line.split(",");
-                if (tokens.length == 12) {
-                    Product p = new Product(tokens[4], new BigDecimal(tokens[6]), new BigDecimal(tokens[7]));
-                    Tax t = new Tax(tokens[2], "", new BigDecimal(tokens[3]));
+        try (Scanner fileScanner = new Scanner(new BufferedReader(new FileReader(file)))) {
+            if (fileScanner.hasNextLine()) fileScanner.nextLine(); // Skip header
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] orderDetails = line.split(",");
+                if (orderDetails.length == 12) {
+                    Product p = new Product(orderDetails[4], new BigDecimal(orderDetails[6]), new BigDecimal(orderDetails[7]));
+                    Tax t = new Tax(orderDetails[2], "", new BigDecimal(orderDetails[3]));
                     Order o = new Order();
-                    o.setOrderNumber(Integer.parseInt(tokens[0]));
-                    o.setCustomerName(tokens[1]);
+                    o.setOrderNumber(Integer.parseInt(orderDetails[0]));
+                    o.setCustomerName(orderDetails[1]);
                     o.setTax(t);
                     o.setProduct(p);
-                    o.setArea(new BigDecimal(tokens[5]));
-                    o.setMaterialCost(new BigDecimal(tokens[8]));
-                    o.setLabourCost(new BigDecimal(tokens[9]));
-                    o.setTaxCost(new BigDecimal(tokens[10]));
-                    o.setTotal(new BigDecimal(tokens[11]));
+                    o.setArea(new BigDecimal(orderDetails[5]));
+                    o.setMaterialCost(new BigDecimal(orderDetails[8]));
+                    o.setLabourCost(new BigDecimal(orderDetails[9]));
+                    o.setTaxCost(new BigDecimal(orderDetails[10]));
+                    o.setTotal(new BigDecimal(orderDetails[11]));
                     o.setLd(date);
                     orders.add(o);
                 }
@@ -153,7 +153,7 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         try (PrintWriter out = new PrintWriter(new FileWriter(filePath))) {
             out.println(HEADER);
             for (Order o : orders) {
-                out.printf("%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                out.printf("%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n", //%d placeholder for int, %s placeholder for string. BigDecimal Values  converted to strings automatically
                         o.getOrderNumber(), o.getCustomerName(), o.getTax().getState(), o.getTax().getTaxRate(),
                         o.getProduct().getProductType(), o.getArea(), o.getProduct().getCostPerSquareFoot(),
                         o.getProduct().getLaborCostPerSquareFoot(), o.getMaterialCost(), o.getLabourCost(),
@@ -185,6 +185,8 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         }
         return null;
     }
+
+
 
     @Override
     public Order removeOrder(int orderNumber, LocalDate date) throws FlooringMasteryPersistenceException {
